@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="600" viewBox="0 0 1100 600">
+<rect width="1100" height="600" fill="#fff"/>
+<g font-family="Arial,sans-serif" fill="#172b4d">
+<text x="40" y="30" font-size="22">main.py ROI layout — horizontal line example</text>
+<g transform="translate(50,70) scale(2)">
+<rect width="320" height="240" fill="#f4f6fa" stroke="#64748b"/>
+<rect x="16" width="288" height="132" fill="#e8f5e9" stroke="#238636"/>
+<rect x="16" y="63" width="288" height="46" fill="#dbeafe" fill-opacity="0.75" stroke="#2563eb"/>
+<rect x="16" width="288" height="79" fill="none" stroke="#dc2626" stroke-dasharray="3 2"/>
+<rect x="174" width="68" height="79" fill="#fee2e2" fill-opacity="0.6" stroke="#dc2626"/>
+<path d="M16 82H304" stroke="#172b4d" stroke-width="1.5"/>
+<path d="M208 0V132" stroke="#9333ea" stroke-dasharray="3 2"/>
+<circle cx="148" cy="82" r="2.5" fill="#15803d"/><circle cx="268" cy="82" r="2.5" fill="#15803d"/>
+</g>
+<g font-size="15">
+<text x="35" y="62">(0,0)</text><text x="645" y="62">x → 320</text>
+<text x="12" y="336">132</text><text x="12" y="552">240</text>
+<text x="718" y="95" fill="#238636">Main: [16, 0, 288, 132]</text>
+<text x="718" y="135" fill="#2563eb">H ROI: [16, 63, 288, 46]</text>
+<text x="718" y="175" fill="#dc2626">V ROI: [16, 0, 288, 79]</text>
+<text x="718" y="215" fill="#9333ea">Trigger center: x = 208</text>
+<text x="718" y="255" fill="#dc2626">Window: 174 ≤ cx ≤ 242</text>
+<text x="718" y="295">Example line: y = 82</text>
+<text x="718" y="335">Cut starts at y = 79</text>
+<text x="718" y="375" fill="#15803d">Samples: x = 148, 268</text>
+<text x="718" y="440">Coordinates are image pixels.</text>
+<text x="718" y="466">Right / bottom bounds excluded.</text>
+<text x="718" y="492">Geometry illustration, not a photo.</text>
+<text x="50" y="580">y increases downward. Main ROI excludes the lower portion of the frame.</text>
+</g></g></svg>
