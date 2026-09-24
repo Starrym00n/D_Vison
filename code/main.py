@@ -8,10 +8,12 @@ W = 320
 H = 240
 
 # 预处理参数
-BINARY_THRESHOLD = 85
+# 横线与竖线特征共用 LAB 阈值：[L最小, L最大, A最小, A最大, B最小, B最大]。
+# L 范围 0~100，A/B 范围 -128~127；黑胶带初值，需现场采样标定。
+LAB_THRESHOLDS = [[0, 56, -5, 14, -128, 12]]
 BLUR_KERNEL_SIZE = 5
 MORPH_KERNEL_SIZE = 3
-thresholds = [[0, 80, -120, -10, 0, 30]] # LAB阈值设定（待验证）
+
 
 morph_kernel = cv2.getStructuringElement( cv2.MORPH_RECT,
 (MORPH_KERNEL_SIZE, MORPH_KERNEL_SIZE),
@@ -50,7 +52,7 @@ L_min_pixels = 80
 L_min_length = 60
 MAX_H_slope = 0.45 # 最大斜率
 
-# 反相阈值
+# LAB 掩膜的白色前景阈值
 BINARY_WHITE_THRESHOLDS = [[200, 255]]
 
 # 主ROI列表
@@ -92,21 +94,20 @@ while not app.need_exit():
     # 图像预处理
     img = cam.read()
     img_bgr = image.image2cv(img,ensure_bgr=True,copy=True)
-    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray,
+    img_bgr = cv2.GaussianBlur(img_bgr,
         (BLUR_KERNEL_SIZE, BLUR_KERNEL_SIZE),
         0,
     )
 
-    # 黑胶带反相为白色
-    _, binary_cv = cv2.threshold(
-        gray,
-        BINARY_THRESHOLD,
-        255,
-        cv2.THRESH_BINARY_INV,
+    # 改编自: https://wiki.sipeed.com/maixpy/api/maix/image.html#binary
+    # 在 RGB 图上按 LAB 阈值提取横线和竖线特征，命中为白色，其余为黑色。
+    color_img = image.cv2image(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB),bgr=False,copy=True)
+    color_img = color_img.binary(LAB_THRESHOLDS)
+    binary_cv = cv2.cvtColor(
+        image.image2cv(color_img,ensure_bgr=False,copy=True), cv2.COLOR_RGB2GRAY,
     )
     # 先闭运算填小缺口，再开运算去孤立噪点；大面积反光仍需现场调阈值。
-    # 形态学处理 
+    # 形态学处理 ？
     binary_cv = cv2.morphologyEx(binary_cv, cv2.MORPH_CLOSE, morph_kernel)
     binary_cv = cv2.morphologyEx(binary_cv, cv2.MORPH_OPEN, morph_kernel)
 
@@ -165,7 +166,7 @@ while not app.need_exit():
         line_dx = line.x2() - line.x1()
         line_dy = line.y2() - line.y1()
 
-        # 将端点顺序不同造成的 180 度差异归一化到 (-90, 90] ?
+        # 将端点顺序不同造成的 180 度差异归一化到 (-90, 90]
         line_angle = math.degrees(math.atan2(line_dy, line_dx))
         if line_angle > 90.0:
             line_angle -= 180.0
@@ -207,7 +208,7 @@ while not app.need_exit():
     V_binary_cv = binary_cv.copy()
     V_roi_height = MIN_V_ROI_HEIGHT
 
-    # 裁切图片
+    # 裁切图片 ？
     if line_pixel_valid:
         for column_x in range(main_left, main_right):
             line_y = line.y1() + (
@@ -374,9 +375,7 @@ while not app.need_exit():
         image.COLOR_GREEN if junction_confirmed else image.COLOR_RED,
     )
 
-    disp.show(img)
+    disp.show(binary_img)
 
 # 用户正常退出时释放串口；异常停止时下位机依靠接收超时停止使用旧数据。
 serial_dev.close()
-
-

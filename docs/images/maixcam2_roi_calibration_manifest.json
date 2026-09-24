@@ -1,0 +1,97 @@
+{
+  "source": "code/main.py",
+  "source_sha256": "94cf3d965f423b67174313ef0b59167763cba5791b5b5b79f667e15e330ec9af",
+  "generated_by": "docs\\images\\draw_roi_calibration.py",
+  "generated_at": "2026-09-24T03:43:54.313407+00:00",
+  "figure_type": "synthetic schematic; not observed data",
+  "parameters": {
+    "W": 320,
+    "H": 240,
+    "LAB_THRESHOLDS": [
+      [
+        0,
+        56,
+        -5,
+        14,
+        -128,
+        12
+      ]
+    ],
+    "BLUR_KERNEL_SIZE": 5,
+    "MORPH_KERNEL_SIZE": 3,
+    "Mark_trigger_x_ratio": 0.65,
+    "MARK_TRIGGER_HALF_WIDTH": 34,
+    "Mark_half_w": 34,
+    "MARK_MIN_AREA": 50,
+    "MARK_MIN_PIXELS": 35,
+    "MARK_MIN_HEIGHT": 14,
+    "MARK_MAX_WIDTH": 28,
+    "MARK_MIN_ASPECT_RATIO": 1.8,
+    "MAX_JUNCTION_GAP": 12,
+    "JUNCTION_CONFIRM_FRAMES": 3,
+    "JUNCTION_RELEASE_FRAMES": 5,
+    "M_ROI_X_RATIO": 0.05,
+    "M_ROI_Y_RATIO": 0.0,
+    "M_ROI_W_RATIO": 0.9,
+    "M_ROI_H_RATIO": 0.55,
+    "H_ROI_Y_RATIO": 0.48,
+    "H_ROI_H_RATIO": 0.35,
+    "MIN_V_ROI_HEIGHT": 24,
+    "V_TO_LINE_GAP": 3,
+    "L_min_area": 100,
+    "L_min_pixels": 80,
+    "L_min_length": 60,
+    "MAX_H_slope": 0.45,
+    "BINARY_WHITE_THRESHOLDS": [
+      [
+        200,
+        255
+      ]
+    ],
+    "Target_Y": 82.0,
+    "HEADING_SAMPLE_HALF_WIDTH": 60,
+    "junction_streak": 0,
+    "junction_latched": false,
+    "junction_count": 0,
+    "junction_clear_streak": 0
+  },
+  "morphology_operations": [
+    "MORPH_CLOSE",
+    "MORPH_OPEN"
+  ],
+  "matplotlib_version": "3.11.0",
+  "dpi": 200,
+  "font": "Microsoft YaHei",
+  "svg_text": "glyph paths",
+  "exports": [
+    {
+      "stem": "maixcam2_roi_calibration",
+      "pixels": [
+        2400,
+        1500
+      ]
+    },
+    {
+      "stem": "maixcam2_lab_calibration",
+      "pixels": [
+        2400,
+        1500
+      ]
+    },
+    {
+      "stem": "maixcam2_geometry_calibration",
+      "pixels": [
+        2400,
+        2000
+      ]
+    },
+    {
+      "stem": "maixcam2_timing_calibration",
+      "pixels": [
+        2400,
+        1500
+      ]
+    }
+  ],
+  "board_validation": "not performed"
+}

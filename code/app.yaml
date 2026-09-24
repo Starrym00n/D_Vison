@@ -1,0 +1,8 @@
+id: starrymoon
+name: 电赛泊车视觉
+version: 1.0.2
+author: Starrymoon
+icon: app.png
+desc: 电赛视觉
+files:
+  - main.py
