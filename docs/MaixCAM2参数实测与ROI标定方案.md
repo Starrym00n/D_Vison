@@ -374,4 +374,4 @@ cal_max_ms = 0
 python docs/images/draw_roi_calibration.py
 ```
 
-脚本读取main.py参数，输出PNG、SVG、预览和 [生成清单](images/maixcam2_roi_calibration_manifest.json)；预期输出包含 `Exported 4 figures` 和 `layout bounds PASS`。修改参数后重新生成并人工核对正文；这不能代替现场验收。历史 `outputs/20260924_calibration/` 是早期分析，不作当前参数表。
+脚本读取main.py参数，输出PNG、SVG、预览和 [生成清单](images/maixcam2_roi_calibration_manifest.json)；预期输出包含 `Exported 4 figures` 和 `layout bounds PASS`。修改参数后重新生成并人工核对正文；这不能代替现场验收。

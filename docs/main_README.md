@@ -175,4 +175,4 @@ python -c "import ast,pathlib; ast.parse(pathlib.Path('code/main.py').read_text(
 
 预期输出 `syntax PASS`；这只能证明语法可解析。交付前还要按 [参数测定方案](MaixCAM2参数实测与ROI标定方案.md) 完成板端颜色、ROI、计数、串口、动态和重新上电测试。
 
-部署时在 MaixVision 中以 `code/` 为应用目录检查 `main.py`、`app.yaml` 和 `app.png`，重新打包安装。`code/dist/` 中的ZIP是已有产物，不能保证包含这次参数；安装后重新上电，核对屏幕与串口。操作参照 [官方应用打包说明](https://wiki.sipeed.com/maixpy/doc/zh/basic/maixvision.html)。
+部署时在 MaixVision 中以 `code/` 为应用目录检查 `main.py`、`app.yaml` 和 `app.png`，重新打包安装。`code/dist/` 中的 `maix-starrymoon-v1.0.2.zip` 是已有产物，不能保证包含这次参数；安装后重新上电，核对屏幕与串口。操作参照 [官方应用打包说明](https://wiki.sipeed.com/maixpy/doc/zh/basic/maixvision.html)。
