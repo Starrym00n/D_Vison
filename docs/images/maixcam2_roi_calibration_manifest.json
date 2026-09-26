@@ -1,8 +1,8 @@
 {
   "source": "code/main.py",
-  "source_sha256": "94cf3d965f423b67174313ef0b59167763cba5791b5b5b79f667e15e330ec9af",
+  "source_sha256": "177018dbc052d12e1890fe49979d0a611233d28b80ff75ca1859bc52cb025b4b",
   "generated_by": "docs\\images\\draw_roi_calibration.py",
-  "generated_at": "2026-09-24T03:43:54.313407+00:00",
+  "generated_at": "2026-09-25T02:52:36.613549+00:00",
   "figure_type": "synthetic schematic; not observed data",
   "parameters": {
     "W": 320,
@@ -34,10 +34,10 @@
     "M_ROI_Y_RATIO": 0.0,
     "M_ROI_W_RATIO": 0.9,
     "M_ROI_H_RATIO": 0.55,
-    "H_ROI_Y_RATIO": 0.48,
-    "H_ROI_H_RATIO": 0.35,
+    "H_ROI_Y_RATIO": 0.425,
+    "H_ROI_H_RATIO": 0.27,
     "MIN_V_ROI_HEIGHT": 24,
-    "V_TO_LINE_GAP": 3,
+    "V_TO_LINE_GAP": 10,
     "L_min_area": 100,
     "L_min_pixels": 80,
     "L_min_length": 60,
@@ -48,7 +48,7 @@
         255
       ]
     ],
-    "Target_Y": 82.0,
+    "Target_Y": 73.0,
     "HEADING_SAMPLE_HALF_WIDTH": 60,
     "junction_streak": 0,
     "junction_latched": false,

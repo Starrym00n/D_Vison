@@ -190,25 +190,30 @@ def clipping_panel(fig):
 def geometry_panels(fig):
     """分别放大色块尺寸和误差测量，保持各自坐标比例。"""
     ax = image_axes(fig, [.075, .21, .23, .24], "B  裁剪后色块 / 局部放大", (187, 237), (95, 25))
-    rectangle(ax, (202, 40, 12, 39), RED, fill="#FBE5EB")
-    ax.axhline(82, color="#222222", lw=2)
-    ax.axhline(79, color=RED, ls=":")
-    ax.annotate("", (202, 35), (214, 35), arrowprops={"arrowstyle": "<->"})
-    ax.text(208, 31, "w=12", ha="center", fontsize=10)
-    ax.annotate("", (221, 40), (221, 79), arrowprops={"arrowstyle": "<->"})
-    ax.text(225, 60, "h=39", rotation=90, fontsize=10)
-    ax.text(189, 90, "横线 y=82", fontsize=10)
+    blob_top, blob_width = 3, 21
+    blob_bottom = int(TY) - GAP
+    blob_height = blob_bottom - blob_top
+    ax.set_ylim(TY + 20, -8)
+    rectangle(ax, (199, blob_top, blob_width, blob_height), RED, fill="#FBE5EB")
+    ax.axhline(TY, color="#222222", lw=2)
+    ax.axhline(blob_bottom, color=RED, ls=":")
+    ax.annotate("", (199, -2), (220, -2), arrowprops={"arrowstyle": "<->"})
+    ax.text(209, -5, f"w={blob_width}", ha="center", fontsize=10)
+    ax.annotate("", (224, blob_top), (224, blob_bottom), arrowprops={"arrowstyle": "<->"})
+    ax.text(227, 35, f"h={blob_height}", rotation=90, fontsize=10)
+    ax.text(189, TY + 13, f"横线 y={TY:g}", fontsize=10)
     ax = image_axes(fig, [.43, .22, .50, .21], "C  位置与方向误差 / 局部放大", (130, 285), (105, 58))
     xs = np.array([140, 278])
-    ys = 90+.15*(xs-CX)
+    center_y = TY + 8
+    ys = center_y+.15*(xs-CX)
     ax.plot(xs, ys, color=BLUE, lw=2.5)
     ax.axhline(TY, color=GREEN, ls="--")
-    ax.scatter([LEFT, CX, RIGHT], [90+.15*(LEFT-CX), 90, 90+.15*(RIGHT-CX)], color=RED, zorder=5)
-    ax.text(135, 72, f"参考线 y={TY:g}", color=GREEN, fontsize=11)
+    ax.scatter([LEFT, CX, RIGHT], [center_y+.15*(LEFT-CX), center_y, center_y+.15*(RIGHT-CX)], color=RED, zorder=5)
+    ax.text(135, TY-3, f"参考线 y={TY:g}", color=GREEN, fontsize=11)
     ax.set_xticks([LEFT, CX, RIGHT])
     ax.set_yticks([65, TY, 99])
-    fig.text(.075, .11, "示例底边 y+h=79；最后像素行 78\n间距 d=|79−82|=3；h/w=3.25", fontsize=11)
-    fig.text(.43, .13, f"示例 y({CX})=90：pos=90−{TY:g}={90-TY:g} px\nhead=y({RIGHT})−y({LEFT})={.15*(RIGHT-LEFT):g} px；正负只表示图像方向。", fontsize=12)
+    fig.text(.075, .11, f"底边 y+h={blob_bottom}；最后像素行 {blob_bottom-1}\n间距 d={GAP}；h/w={blob_height/blob_width:.2f}", fontsize=11)
+    fig.text(.43, .13, f"示例 y({CX})={center_y:g}：pos={center_y:g}−{TY:g}=8 px\nhead=y({RIGHT})−y({LEFT})={.15*(RIGHT-LEFT):g} px；正负只表示图像方向。", fontsize=12)
 
 
 def geometry_figure():

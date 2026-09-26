@@ -2,6 +2,7 @@ from maix import camera, display, image, uart, app ,err ,pinmap
 import cv2, math
 
 # 参数配置
+# 图像初标：pictures/20260924181420.jpeg（320×240，固定支架后）
 
 # 分辨率
 W = 320
@@ -9,48 +10,52 @@ H = 240
 
 # 预处理参数
 # 横线与竖线特征共用 LAB 阈值：[L最小, L最大, A最小, A最大, B最小, B最大]。
-# L 范围 0~100，A/B 范围 -128~127；黑胶带初值，需现场采样标定。
+# L 范围 0~100，A/B 范围 -128~127；本帧内部样本可分，保留现值；待测：原始帧及多光照。
 LAB_THRESHOLDS = [[0, 56, -5, 14, -128, 12]]
-BLUR_KERNEL_SIZE = 5
-MORPH_KERNEL_SIZE = 3
+BLUR_KERNEL_SIZE = 5  # 待测：对比不同奇数核的降噪效果与细线保留情况。
+MORPH_KERNEL_SIZE = 3  # 待测：复核远处细竖线是否消失、相邻前景是否粘连。
 
 
 morph_kernel = cv2.getStructuringElement( cv2.MORPH_RECT,
 (MORPH_KERNEL_SIZE, MORPH_KERNEL_SIZE),
 ) #？
 
-Mark_trigger_x_ratio = 0.65
-MARK_TRIGGER_HALF_WIDTH = 34
-Mark_half_w = 34
+Mark_trigger_x_ratio = 0.65  # 待测：当前触发中心 x=208，需按实际计数位置标定。
+MARK_TRIGGER_HALF_WIDTH = 34  # 待测：本帧竖线中心约 x=209 在窗口内，需结合车速和有效帧率验证。
+Mark_half_w = 34  # 未使用：实际窗口半宽由 MARK_TRIGGER_HALF_WIDTH 控制。
 mark_trigger_x = int(W * Mark_trigger_x_ratio) # 目标竖直线
 
-MARK_MIN_AREA = 50  # 色块最小面积门限。
-MARK_MIN_PIXELS = 35  # 色块最少有效白色像素数。
-MARK_MIN_HEIGHT = 14  # 裁剪后色块外接框的最小高度，像素。
-MARK_MAX_WIDTH = 28  # 色块外接框的最大宽度，像素。
-MARK_MIN_ASPECT_RATIO = 1.8  # 最小高宽比，排除接近方形的干扰。
-MAX_JUNCTION_GAP = 12  # 色块底部与横线的最大纵向距离，像素。
-JUNCTION_CONFIRM_FRAMES = 3  # 连续满足交点条件的帧数。
-# 横线有效且窗口连续无竖线时才解除锁定，短暂丢线不视为地标离开。
-JUNCTION_RELEASE_FRAMES = 5
+MARK_MIN_AREA = 50  # 色块最小面积门限。待测：用最远、最小地标确定下限。
+MARK_MIN_PIXELS = 35  # 色块最少有效白色像素数。待测：统计弱光、反光下的最小前景像素数。
+MARK_MIN_HEIGHT = 14  # 裁剪后色块外接框的最小高度，像素。待测：复核最短地标裁剪后的高度。
+MARK_MAX_WIDTH = 28  # 色块外接框的最大宽度，像素。待测：本帧离线裁剪后宽约 21 px，需复核近处最大宽度。
+MARK_MIN_ASPECT_RATIO = 1.8  # 最小高宽比，排除接近方形的干扰。待测：检查极限姿态下的高宽比。
+MAX_JUNCTION_GAP = 12  # 待测：本帧 V_TO_LINE_GAP=10 时离线间距约 10 px；现值保留，复核板端及倾斜姿态。
+JUNCTION_CONFIRM_FRAMES = 3  # 连续满足交点条件的帧数。待测：结合有效帧率、窗口停留时间与误检记录验证。
+# 跟踪到已计数地标移出窗口后，连续确认离开才解锁；漏检不等于离开。
+JUNCTION_RELEASE_FRAMES = 5  # 待测：验证相邻地标之间有足够的窗口清空帧数，且不会重复计数。
+MARK_MAX_STEP = 16  # 相邻帧允许的位置变化，像素；待按最高车速和帧率实测。
+MARK_RELEASE_MARGIN = 4  # 离开窗口的额外余量，像素，防止边界抖动解锁。
 
 # 主 ROI 
-M_ROI_X_RATIO = 0.05
-M_ROI_Y_RATIO = 0.00
-M_ROI_W_RATIO = 0.90
-M_ROI_H_RATIO = 0.55
+M_ROI_X_RATIO = 0.05  # 待测：本图左界 x=16 可用，需复核横向偏移极限。
+M_ROI_Y_RATIO = 0.00  # 待测：本帧竖线延伸至画面顶部，保留现值，复核运动时的俯仰变化。
+M_ROI_W_RATIO = 0.90  # 待测：本图宽 288 px 可用，需复核转弯时的目标覆盖。
+M_ROI_H_RATIO = 0.55  # 待测：本图高 132 px 可用，需复核俯仰极限与车体干扰。
 
 # 水平 ROI 
-H_ROI_Y_RATIO = 0.48
-H_ROI_H_RATIO = 0.35
-MIN_V_ROI_HEIGHT = 24 # 竖线检测区域的最小高度，像素。
-V_TO_LINE_GAP = 3
+H_ROI_Y_RATIO = 0.425  # 图像初标：int(132×0.425)=56；横线可见带约 y=64~82，上方留约 8 px。待测：运动上界。
+H_ROI_H_RATIO = 0.27  # 图像初标：int(132×0.27)=35，H_roi=[16,56,288,35]，保留至 y=90。待测：运动下界。
+MIN_V_ROI_HEIGHT = 24 # 竖线检测区域的最小高度，像素。待测：检查裁剪后最短地标的覆盖。
+V_TO_LINE_GAP = 10  # 图像初标：掩膜横线厚约 12~13 px，半厚向上取整 7 加 3 px 裕量。待测：板端残留与细线保留。
 
 #像素门限
-L_min_area = 100
-L_min_pixels = 80
-L_min_length = 60
-MAX_H_slope = 0.45 # 最大斜率
+L_min_area = 100  # 待测：用最弱有效横线与背景干扰样本确定面积下限。
+L_min_pixels = 80  # 待测：统计不同光照、遮挡下有效横线的最小前景像素数。
+L_min_length = 60  # 待测：实际限制水平跨度 abs(dx)，需复核转弯、遮挡后的最短有效跨度。
+MAX_H_slope = 0.45 # 最大斜率。待测：现值对应约 ±24.2°，需按实际最大转弯姿态验证。
+LINE_SUPPORT_RADIUS = 3  # 三个误差采样点周围检查白像素的半径，像素。
+LINE_MIN_SUPPORT_RATIO = 0.5  # 邻域白像素最小占比；待按胶带宽度实测。
 
 # LAB 掩膜的白色前景阈值
 BINARY_WHITE_THRESHOLDS = [[200, 255]]
@@ -72,8 +77,8 @@ H_roi = [
 ]
 
 # 标定水平横线
-Target_Y = 82.0
-HEADING_SAMPLE_HALF_WIDTH = 60 # 左右采样点距触发中心的距离，像素。
+Target_Y = 73.0  # 待测：本帧离线 y(208)≈73.3 px；尚未确认理想巡线姿态，保留原零点，需板端正确拟合后多帧标零。
+HEADING_SAMPLE_HALF_WIDTH = 60  # 待测：本帧 x=148、268 均落在横线跨度内；保留现值，复核极限姿态和拟合外推。
 
 # 摄像头、串口设备初始化
 cam = camera.Camera(W, H)
@@ -88,6 +93,8 @@ junction_streak = 0
 junction_latched = False
 junction_count = 0
 junction_clear_streak = 0
+junction_previous_xy = None
+latched_x = None  # 已计数地标的最近可见位置；识别失败时保留，不推测其离开。
 
 while not app.need_exit():
 
@@ -144,6 +151,8 @@ while not app.need_exit():
     position_error_px = 0.0
     heading_error_px = 0.0
     line_pixel_valid = False
+    sample_x_left = max(main_left, mark_trigger_x - HEADING_SAMPLE_HALF_WIDTH)
+    sample_x_right = min(main_right - 1, mark_trigger_x + HEADING_SAMPLE_HALF_WIDTH)
 
     # 直线筛选与标定
     for a in lines:
@@ -157,8 +166,23 @@ while not app.need_exit():
             continue
         if length_temp <= length:
             continue
-
-
+        # 关键采样点必须有实际白像素支持，不能仅凭拟合延长线输出控制误差。
+        supported = True
+        for sample_x in (sample_x_left, mark_trigger_x, sample_x_right):
+            sample_y = round(a.y1() + (sample_x - a.x1()) * temp_dy / temp_dx)
+            if not (main_left <= sample_x < main_right and main_top <= sample_y < main_bottom):
+                supported = False
+                break
+            patch_top = max(main_top, sample_y - LINE_SUPPORT_RADIUS)
+            patch_bottom = min(main_bottom, sample_y + LINE_SUPPORT_RADIUS + 1)
+            patch_left = max(main_left, sample_x - LINE_SUPPORT_RADIUS)
+            patch_right = min(main_right, sample_x + LINE_SUPPORT_RADIUS + 1)
+            patch = binary_cv[patch_top:patch_bottom, patch_left:patch_right]
+            if patch.size == 0 or patch.sum() < 255 * patch.size * LINE_MIN_SUPPORT_RATIO:
+                supported = False
+                break
+        if not supported:
+            continue
         line = a
         length = length_temp
         
@@ -173,25 +197,10 @@ while not app.need_exit():
         elif line_angle <= -90.0:
             line_angle += 180.0
 
-         # 根据直线方程计算固定触发横坐标处的高度，避免端点位置变化影响误差
+        # 根据直线方程计算固定触发横坐标处的高度，避免端点位置变化影响误差
         line_y_at_trigger = line.y1() + ((mark_trigger_x - line.x1()) * line_dy / line_dx)
-
-        # 采样点
-        sample_x_left = max(
-            main_left,
-            mark_trigger_x - HEADING_SAMPLE_HALF_WIDTH,
-        )
-        sample_x_right = min(
-            main_right - 1,
-            mark_trigger_x + HEADING_SAMPLE_HALF_WIDTH,
-        )
-
-        line_y_left = line.y1() + (
-            (sample_x_left - line.x1()) * line_dy / line_dx
-        )
-        line_y_right = line.y1() + (
-            (sample_x_right - line.x1()) * line_dy / line_dx
-        )
+        line_y_left = line.y1() + (sample_x_left - line.x1()) * line_dy / line_dx
+        line_y_right = line.y1() + (sample_x_right - line.x1()) * line_dy / line_dx
 
         # 正负号只描述图像坐标方向；后续控制端需根据舵机方向决定取反与否。
         position_error_px = line_y_at_trigger - Target_Y
@@ -237,28 +246,27 @@ while not app.need_exit():
 
     blob = None
     blob_distance = W
-    mark_in_window = False
+    tracked_x = None
+    track_distance = MARK_MAX_STEP + 1
     junction_x = 0
     junction_y = 0
 
     for b in blobs:
-        if b.w() <= 0:
+        if b.w() <= 0 or not line_pixel_valid:
             continue
+        candidate_junction_y = int(line.y1() + (b.cx() - line.x1()) * line_dy / line_dx)
+        if abs(b.y() + b.h() - candidate_junction_y) > MAX_JUNCTION_GAP:
+            continue
+        # 已计数目标按就近位置跟踪，允许暂时变宽/变矮；悬空干扰不参与。
+        if junction_latched and abs(b.cx() - latched_x) < track_distance:
+            tracked_x = b.cx()
+            track_distance = abs(b.cx() - latched_x)
         if b.h() < MARK_MIN_HEIGHT or b.w() > MARK_MAX_WIDTH:
             continue
         if b.h() < b.w() * MARK_MIN_ASPECT_RATIO:
             continue
-
         trigger_distance = abs(b.cx() - mark_trigger_x)
         if trigger_distance > MARK_TRIGGER_HALF_WIDTH:
-            continue
-        mark_in_window = True
-        if not line_pixel_valid:
-            continue
-        candidate_junction_y = int(
-            line.y1() + (b.cx() - line.x1()) * line_dy / line_dx
-        )
-        if abs(b.y() + b.h() - candidate_junction_y) > MAX_JUNCTION_GAP:
             continue
         if trigger_distance >= blob_distance:
             continue
@@ -275,11 +283,17 @@ while not app.need_exit():
             blob.x(), blob.y(), blob.w(), blob.h(), image.COLOR_RED, 2,
         )
 
-    # 连续确认抑制单帧噪点；任何不满足交点条件的帧都会打断确认。
+    # 位置连续才累计确认；候选跳变从当前帧重新计起，中断则清零。
     if junction_candidate:
-        junction_streak = min(junction_streak + 1, JUNCTION_CONFIRM_FRAMES)
+        if junction_previous_xy is not None and max(abs(junction_x - junction_previous_xy[0]),
+                                                   abs(junction_y - junction_previous_xy[1])) <= MARK_MAX_STEP:
+            junction_streak = min(junction_streak + 1, JUNCTION_CONFIRM_FRAMES)
+        else:
+            junction_streak = 1
+        junction_previous_xy = (junction_x, junction_y)
     else:
         junction_streak = 0
+        junction_previous_xy = None
 
     junction_confirmed = junction_streak >= JUNCTION_CONFIRM_FRAMES
     
@@ -288,19 +302,23 @@ while not app.need_exit():
         junction_event = True
         junction_count += 1
         junction_latched = True
+        latched_x = junction_x
 
-    # 丢线或仍有竖线时不解除锁定，防止一次短暂识别失败造成重复计数。
-    if line_pixel_valid and not mark_in_window:
-        junction_clear_streak = min(
-            junction_clear_streak + 1, JUNCTION_RELEASE_FRAMES
-        )
+    if tracked_x is not None:
+        latched_x = tracked_x
+    # 只依据旧地标已观测到的出窗位置解锁；在窗内失踪时宁可保持锁定。
+    if (junction_latched and line_pixel_valid
+            and abs(latched_x - mark_trigger_x)
+            > MARK_TRIGGER_HALF_WIDTH + MARK_RELEASE_MARGIN):
+        junction_clear_streak = min(junction_clear_streak + 1, JUNCTION_RELEASE_FRAMES)
     else:
         junction_clear_streak = 0
     if junction_clear_streak >= JUNCTION_RELEASE_FRAMES:
         junction_latched = False
+        latched_x = None
 
     # 丢线时误差无效，不能把占位值 0 当作居中；角度单位为度，误差为像素。
-    # 计数仅按窗口进入/离开去重，长时间遮挡后重现仍可能被当成新地标。
+    # 已计数地标若未被观测到出窗就完全消失，将保持锁定，需现场验证遮挡场景。
     vision_result = {
         "line_valid": line_pixel_valid,
         "position_error_px": position_error_px if line_pixel_valid else None,
@@ -375,7 +393,7 @@ while not app.need_exit():
         image.COLOR_GREEN if junction_confirmed else image.COLOR_RED,
     )
 
-    disp.show(binary_img)
+    disp.show(img)
 
 # 用户正常退出时释放串口；异常停止时下位机依靠接收超时停止使用旧数据。
 serial_dev.close()
