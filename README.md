@@ -1,6 +1,6 @@
-# 电赛 D 题：自动泊车视觉端
+# 自动泊车视觉端（D 题）
 
-本项目面向“具有自动泊车功能的电动车”赛题，提供运行在 **MaixCAM2** 上的视觉程序。相机识别地面横线和与其相接的竖向地标，计算巡线所需的像素误差与累计地标数，并通过 UART 发给下位机。**电机、舵机控制、任务阶段管理和停车执行由下位机负责**，本仓库没有这些控制程序。
+本项目对应 [IPCS13 班课程设计 D 题《具有自动泊车功能的电动车》](docs/pdfs/D_具有自动泊车功能的电动车.pdf)，提供运行在 **MaixCAM2** 上的视觉程序。相机识别地面横线和与其相接的竖向地标，计算巡线所需的像素误差与累计地标数，并通过 UART 发给下位机。**电机、舵机控制、任务阶段管理和停车执行由下位机负责**，本仓库没有这些控制程序。题目包含倒车入库、侧方入库及出库等整车任务，不能将本视觉程序等同于完整作品。
 
 当前代码以 320 × 240 图像和一组工程初值运行。颜色阈值、ROI、计数窗口等参数仍需在实际车辆和场地上测定；电脑端测试通过不代表板端识别效果或停车精度已验收。
 
@@ -13,12 +13,13 @@
 | [`docs/main_README.md`](docs/main_README.md) | 程序流程、显示结果、串口协议及异常行为 |
 | [`docs/MaixCAM2参数实测与ROI标定方案.md`](docs/MaixCAM2参数实测与ROI标定方案.md) | 参数表、ROI 图解、标定步骤和验收记录 |
 | [`docs/maixcam2_parameter_record.xlsx`](docs/maixcam2_parameter_record.xlsx) | 参数实测记录表 |
-| [`docs/pdfs/`](docs/pdfs/) | 赛题 PDF 及分页图片 |
-| [`pictures/`](pictures/) | 现场参考图像 |
-| [`outputs/`](outputs/) | 标定过程记录目录；按[标定方案](docs/MaixCAM2参数实测与ROI标定方案.md)新建轮次子目录存放截图与日志 |
+| [`docs/images/`](docs/images/) | 标定教学示意图、生成脚本及生成清单 |
+| [`docs/pdfs/D_具有自动泊车功能的电动车.pdf`](docs/pdfs/D_具有自动泊车功能的电动车.pdf) | 赛题原文；同目录另有分页图片 |
+| [`pictures/20260924181420.jpeg`](pictures/20260924181420.jpeg) | 带标注的参考照片，用于图像初标 |
+| [`code/dist/`](code/dist/) | 已有应用安装包，不代表当前源码 |
 | [`tests/test_main_logic.py`](tests/test_main_logic.py) | 电脑端逻辑测试 |
 
-应用打包配置只在 `code/` 内维护一份：以 `code/` 为应用目录，核对 `main.py`、`app.yaml` 和 `app.png`。仓库根目录没有应用入口。`code/dist/` 保留最新的 `maix-starrymoon-v1.0.2.zip` 作为已有安装包，但不保证包含当前源码的改动，交付前须重新打包。
+应用打包配置只在 `code/` 内维护一份：以 `code/` 为应用目录，核对 `main.py`、`app.yaml` 和 `app.png`。仓库根目录没有应用入口。`code/dist/` 保留已有的 `maix-starrymoon-v1.0.2.zip`，但不保证包含当前源码的改动，交付前须重新打包。标定截图与日志可按[标定方案](docs/MaixCAM2参数实测与ROI标定方案.md)存放到自行新建的 `outputs/日期/`；当前仓库没有 `outputs/` 目录或板端实测结果。
 
 ## 运行环境与上板
 
@@ -26,7 +27,7 @@
 - 开发电脑：使用 MaixVision 连接设备、运行脚本；电脑上的普通 Python 环境不能直接运行需要相机、显示器和 UART 的整份 `code/main.py`。
 - 串口：程序将 A21 映射为 `UART4_TX`、A22 映射为 `UART4_RX`，打开 `/dev/ttyS4`，波特率为 115200。当前只发送数据；接线前核对板卡引脚、两端电平，并共地。
 
-首次运行建议按以下顺序进行：
+赛题场地使用白纸和约 1.8 cm 宽的黑色胶带；当前视觉参数以此类场景为目标。首次运行建议按以下顺序进行：
 
 1. 固定相机和车体，确保画面能看到横线及其上方的竖向地标；先保持电机停止。
 2. 在 MaixVision 中打开 [`code/main.py`](code/main.py)，停止旧程序后运行当前文件，确认控制台无初始化错误、显示画面持续更新。
@@ -55,4 +56,4 @@ python -m unittest discover -s tests -v
 python -c "import ast,pathlib; ast.parse(pathlib.Path('code/main.py').read_text(encoding='utf-8-sig')); print('syntax PASS')"
 ```
 
-第二条命令预期输出 `syntax PASS`。上板前仍须完成光照、ROI、不同车姿、最高计划车速下的连续计数、串口超时与重新上电测试。当前地标若在被跟踪到离开窗口前完全丢失，计数锁定可能无法释放；联调时应重点检查遮挡和漏检场景。
+第二条命令预期输出 `syntax PASS`。标定图仅为教学示意；当前[生成清单](docs/images/maixcam2_roi_calibration_manifest.json)记录的源码 SHA-256 与 `code/main.py` 已不一致，且[图表生成脚本](docs/images/draw_roi_calibration.py)目前无法完成第四张图，修复前不要运行生成命令。上板前仍须完成光照、ROI、不同车姿、最高计划车速下的连续计数、串口超时与重新上电测试。当前地标若在被跟踪到离开窗口前完全丢失，计数锁定可能无法释放；联调时应重点检查遮挡和漏检场景。

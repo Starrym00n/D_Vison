@@ -368,10 +368,10 @@ cal_max_ms = 0
 
 ## 图表更新与资料归档
 
-四张图是教学示意，不是板端实测。已有Python、Matplotlib、NumPy及微软雅黑字体的电脑，可在项目根目录运行：
+四张图是教学示意，不是板端实测。**当前生成脚本与新版计数状态机不兼容**：运行到第四张图的 `timing_values()` 时会缺少 `junction_x` 等状态，前三张图可能已被覆盖而生成清单不会更新。修复脚本前不要运行以下命令；修复后，在已有 Python、Matplotlib、NumPy 及微软雅黑字体的电脑上，于项目根目录运行：
 
 ```powershell
 python docs/images/draw_roi_calibration.py
 ```
 
-脚本读取main.py参数，输出PNG、SVG、预览和 [生成清单](images/maixcam2_roi_calibration_manifest.json)；预期输出包含 `Exported 4 figures` 和 `layout bounds PASS`。修改参数后重新生成并人工核对正文；这不能代替现场验收。
+脚本读取main.py参数，输出PNG、SVG、预览和 [生成清单](images/maixcam2_roi_calibration_manifest.json)；修复后的预期输出包含 `Exported 4 figures` 和 `layout bounds PASS`。当前清单中的源码 SHA-256 与 `code/main.py` 不一致；脚本修复并重新生成后，还需人工核对正文。这不能代替现场验收。
